@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .book { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .form-input { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Library Management System</h1>
+
+    <h2>Books List</h2>
+    <div id="book-list">
+        {% for book in books %}
+            <div class="book">
+                <strong>ID:</strong> {{ book.id }} <strong>Title:</strong> {{ book.title }} <strong>Author:</strong> {{ book.author }} <strong>Status:</strong> {{ book.status }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const apiUrl = '/api/books';
+
+        async function fetchBooks() {
+            const response = await fetch(apiUrl);
+            const books = await response.json();
+            const bookList = document.getElementById('book-list');
+            bookList.innerHTML = '';
+            books.forEach(book => {
+                bookList.innerHTML += `
+                    <div class="book">
+                        <strong>ID:</strong> ${book.id} <strong>Title:</strong> ${book.title} <strong>Author:</strong> ${book.author} <strong>Status:</strong> ${book.status}
+                    </div>
+                `;
+            });
+        }
+
+        fetchBooks();
+    </script>
+</body>
+</html>

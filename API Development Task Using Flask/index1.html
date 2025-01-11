@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask RESTful API Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .user { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; }
+        .user input { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Flask RESTful API Frontend</h1>
+    <div id="user-list"></div>
+
+    <h2>Add New User</h2>
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="role" placeholder="Role">
+    <button onclick="addUser()">Add User</button>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:5000/api/users';
+
+        // Fetch and display users
+        async function fetchUsers() {
+            const response = await fetch(apiUrl);
+            const users = await response.json();
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+            users.forEach(user => {
+                userList.innerHTML += `<div class='user'>
+                    <strong>ID:</strong> ${user.id} <strong>Name:</strong> ${user.name} <strong>Role:</strong> ${user.role}
+                    <button onclick='deleteUser(${user.id})'>Delete</button>
+                    <button onclick='showUpdateForm(${user.id}, "${user.name}", "${user.role}")'>Update</button>
+                </div>`;
+            });
+        }
+
+        // Add a new user
+        async function addUser() {
+            const name = document.getElementById('name').value;
+            const role = document.getElementById('role').value;
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, role })
+            });
+            if (response.ok) {
+                fetchUsers();
+                document.getElementById('name').value = '';
+                document.getElementById('role').value = '';
+            }
+        }
+
+        // Delete a user
+        async function deleteUser(userId) {
+            const response = await fetch(`${apiUrl}/${userId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                fetchUsers();
+            }
+        }
+
+        // Show update form
+        function showUpdateForm(userId, userName, userRole) {
+            const updateForm = `<div id='update-form'>
+                <h2>Update User</h2>
+                <input type='text' id='update-name' value='${userName}'>
+                <input type='text' id='update-role' value='${userRole}'>
+                <button onclick='updateUser(${userId})'>Update</button>
+                <button onclick='cancelUpdate()'>Cancel</button>
+            </div>`;
+            document.getElementById('user-list').insertAdjacentHTML('afterend', updateForm);
+        }
+
+        // Cancel update form
+        function cancelUpdate() {
+            document.getElementById('update-form').remove();
+        }
+
+        // Update a user
+        async function updateUser(userId) {
+            const name = document.getElementById('update-name').value;
+            const role = document.getElementById('update-role').value;
+            const response = await fetch(`${apiUrl}/${userId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, role })
+            });
+            if (response.ok) {
+                fetchUsers();
+                cancelUpdate();
+            }
+        }
+
+        fetchUsers();
+    </script>
+</body>
+</html>

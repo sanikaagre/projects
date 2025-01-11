@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { margin-bottom: 20px; }
+        .book, .search-result { margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; }
+        .form-input { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Library Management System</h1>
+
+    <h2>Add a New Book</h2>
+    <div class="container">
+        <input type="text" id="title" class="form-input" placeholder="Title">
+        <input type="text" id="author" class="form-input" placeholder="Author">
+        <input type="number" id="year" class="form-input" placeholder="Year">
+        <button onclick="addBook()">Add Book</button>
+    </div>
+
+    <h2>Books List</h2>
+    <div id="book-list"></div>
+
+    <h2>Search for Books</h2>
+    <div class="container">
+        <input type="text" id="search-query" class="form-input" placeholder="Search by title or author">
+        <button onclick="searchBooks()">Search</button>
+    </div>
+
+    <h2>Check Out/Return Book</h2>
+    <div class="container">
+        <input type="number" id="checkout-id" class="form-input" placeholder="Book ID">
+        <button onclick="checkoutBook()">Check Out</button>
+        <button onclick="returnBook()">Return</button>
+    </div>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:5000/api';
+
+        async function fetchBooks() {
+            const response = await fetch(`${apiUrl}/books`);
+            const books = await response.json();
+            const bookList = document.getElementById('book-list');
+            bookList.innerHTML = '';
+            books.forEach(book => {
+                bookList.innerHTML += `<div class="book">
+                    <strong>ID:</strong> ${book.id} <strong>Title:</strong> ${book.title} <strong>Author:</strong> ${book.author}
+                    <strong>Year:</strong> ${book.year} <strong>Status:</strong> ${book.status}
+                </div>`;
+            });
+        }
+
+        async function addBook() {
+            const title = document.getElementById('title').value;
+            const author = document.getElementById('author').value;
+            const year = document.getElementById('year').value;
+
+            const response = await fetch(`${apiUrl}/books`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, author, year })
+            });
+
+            if (response.ok) {
+                fetchBooks();
+            }
+        }
+
+        async function searchBooks() {
+            const query = document.getElementById('search-query').value;
+            const response = await fetch(`${apiUrl}/search?query=${query}`);
+            const books = await response.json();
+            const searchResult = document.getElementById('book-list');
+            searchResult.innerHTML = '';
+            books.forEach(book => {
+                searchResult.innerHTML += `<div class="search-result">
+                    <strong>ID:</strong> ${book.id} <strong>Title:</strong> ${book.title} <strong>Author:</strong> ${book.author}
+                </div>`;
+            });
+        }
+
+        async function checkoutBook() {
+            const bookId = document.getElementById('checkout-id').value;
+            const response = await fetch(`${apiUrl}/checkout/${bookId}`, { method: 'POST' });
+
+            if (response.ok) {
+                fetchBooks();
+            }
+        }
+
+        async function returnBook() {
+            const bookId = document.getElementById('checkout-id').value;
+            const response = await fetch(`${apiUrl}/return/${bookId}`, { method: 'POST' });
+
+            if (response.ok) {
+                fetchBooks();
+            }
+        }
+
+        fetchBooks();
+    </script>
+</body>
+</html>
